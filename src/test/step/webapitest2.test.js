@@ -1,18 +1,35 @@
 import {test,expect,request} from "@playwright/test";
 
-const payloaddatalogin= {userEmail: "gokulbra@gmail.com", userPassword: "Gokul@322003"}
+const payloaddatalogin= {userEmail: "gokulrajclg322003@gmail.com", userPassword: "Gokul@322003"}
+const orderpayload ={country: "India", productOrderedId: "67a8dde5c0d3e6622a297cc8"}
 let token
+let orderid
+
 test.beforeAll(async()=> {
-    const context = request.newContext();
-    const pagedata = await context.post("https://rahulshettyacademy.com/api/ecom/auth/login",{
-        data :payloaddatalogin
+    const context = await request.newContext();
+    const pagedata = await context.post("https://rahulshettyacademy.com/api/ecom/auth/login", 
+        {
+        data:payloaddatalogin
 
     });
-   expect(await pagedata).ok()).toBeTruthy();
-    const jsondata = (await pagedata).json();
+   expect(pagedata.ok()).toBeTruthy();
+   const jsondata = await pagedata.json();
    token = jsondata.token;
    console.log(token);
-   
+  const orderdata= await context.post("https://rahulshettyacademy.com/api/ecom/order/create-order",
+    {
+        data:orderpayload,
+        headers:{
+            'Authorization': `Bearer ${token}`, // Corrected Authorization header format,
+            'Content-Type': 'application/json'
+        }
+
+    });
+    const orderjsondata = await orderdata.json();
+    orderid = orderjsondata.orders
+    console.log(orderjsondata);
+
+         
 })
 test("webapi order check",async({page})=>
 {
@@ -20,5 +37,6 @@ test("webapi order check",async({page})=>
         window.localStorage.setItem('token',value)
     }, token );
     await  page.goto("https://rahulshettyacademy.com/client/");
-    console.log(token);
+    
+    
 })
